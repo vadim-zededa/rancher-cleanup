@@ -21,7 +21,7 @@ roleRef:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: cleanup-job
+  name: zks-cleanup-job
   namespace: kube-system
   labels:
     app: cleanup
@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
       - name: cleanup
-        image: rancher/rancher-cleanup:latest
+        image: vadimzededa/zks-cleanup:Oct-31
         args: [ "force" ]
         imagePullPolicy: Always
       serviceAccountName: cleanup-service-account

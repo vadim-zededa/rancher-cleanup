@@ -15,7 +15,7 @@ This script will delete all Kubernetes resources belonging to/created by Rancher
 ### Run as a Kubernetes Job
 
 * Deploy the job using `kubectl create -f deploy/rancher-cleanup.yaml`
-* Watch logs using `kubectl  -n kube-system logs -l job-name=cleanup-job  -f`
+* Watch logs using `kubectl  -n kube-system logs -l job-name=zks-cleanup-job  -f`
 
 
 ## Verify
