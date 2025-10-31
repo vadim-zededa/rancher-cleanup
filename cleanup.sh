@@ -89,6 +89,19 @@ kcdns()
   fi
 }
 
+
+# namespace might be gone, but its resources might still exist - clean them up
+cleanupns()
+{
+  i="0"
+  while [ $i -lt 4 ]; do
+    if timeout 21 sh -c  'kubectl delete -n '"$1"' deploy,ds,job,service,secret,role,rolebinding,cm,sa,clusterrole,clusterrolebinding --all'; then
+      break
+    fi
+    i=$((i+1))
+  done
+}
+
 printapiversion()
 {
 if echo "$1" | grep -q '/'; then
@@ -100,10 +113,9 @@ fi
 
 set -x
 # Namespaces with resources that probably have finalizers/dependencies (needs manual traverse to patch and delete else it will hang)
-CATTLE_NAMESPACES="local zks-system zks-fleet-clusters-system zks-fleet-local-system zks-fleet-system zks-global-data zks-global-nt zks-impersonation-system zks-provisioning-capi-system zks-ui-plugin-system cattle-system cattle-impersonation-s
-ystem cattle-global-data cattle-global-nt cattle-provisioning-capi-system"
+CATTLE_NAMESPACES="local zks-system zks-global-data zks-global-nt zks-impersonation-system zks-provisioning-capi-system zks-ui-plugin-system cattle-system cattle-impersonation-system cattle-global-data cattle-global-nt cattle-provisioning-capi-system"
 TOOLS_NAMESPACES="istio-system cattle-resources-system cis-operator-system cattle-dashboards cattle-gatekeeper-system cattle-alerting cattle-logging cattle-pipeline cattle-prometheus rancher-operator-system cattle-monitoring-system cattle-logging-system cattle-elemental-system"
-FLEET_NAMESPACES="cattle-fleet-clusters-system cattle-fleet-local-system cattle-fleet-system fleet-default fleet-local fleet-system"
+FLEET_NAMESPACES="zks-fleet-clusters-system zks-fleet-local-system zks-fleet-system cattle-fleet-clusters-system cattle-fleet-local-system cattle-fleet-system fleet-default fleet-local fleet-system"
 
 # Delete rancher install to not have anything running that (re)creates resources
 kcd "-n cattle-system deploy,ds --all"
@@ -488,4 +500,9 @@ done
 # Exclude helm.cattle.io and addons.k3s.cattle.io to not break RKE2 addons
 for CRD in $(kubectl get crd -o name | grep cattle\.io | grep -v helm\.cattle\.io | grep -v k3s\.cattle\.io); do
   kcd "$CRD"
+done
+
+# final cleanup - delete any orphaned resources
+for NS in $TOOLS_NAMESPACES $FLEET_NAMESPACES $CATTLE_NAMESPACES; do
+    cleanupns "$NS" 
 done
