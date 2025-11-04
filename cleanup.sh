@@ -158,10 +158,10 @@ if kubectl get validatingwebhookconfigurations -o name | grep -q istio; then
 fi
 
 # Cluster api
-if [ -n "$(kubectl get validatingwebhookconfiguration.admissionregistration.k8s.io/validating-webhook-configuration 2>/dev/null)" ]; then
+if [ -n "$(kubectl get validatingwebhookconfiguration.admissionregistration.k8s.io/validating-webhook-configuration)" ]; then
     kcd validatingwebhookconfiguration.admissionregistration.k8s.io/validating-webhook-configuration
 fi
-if [ -n "$(kubectl get mutatingwebhookconfiguration.admissionregistration.k8s.io/mutating-webhook-configuration 2>/dev/null)" ]; then
+if [ -n "$(kubectl get mutatingwebhookconfiguration.admissionregistration.k8s.io/mutating-webhook-configuration)" ]; then
     kcd mutatingwebhookconfiguration.admissionregistration.k8s.io/mutating-webhook-configuration
 fi
 
@@ -305,7 +305,7 @@ for CRD in $DATACRDS; do
 done
 
 # Delete apiservice
-for APISERVICE in $(kubectl  get apiservice -o name | grep cattle | grep -v k3s\.cattle\.io | grep -v helm\.cattle\.io) $(kubectl  get apiservice -o name | grep gatekeeper\.sh) $(kubectl  get apiservice -o name | grep istio\.io) $(kubectl  get apiservice -o name | grep elemental-operator) apiservice\.apiregistration\.k8s\.io\/v1beta1\.custom\.metrics\.k8s\.io; do
+for APISERVICE in $(kubectl  get apiservice -o name | grep cattle | grep -v k3s\.cattle\.io | grep -v helm\.cattle\.io) $(kubectl  get apiservice -o name | grep gatekeeper\.sh) $(kubectl  get apiservice -o name | grep istio\.io) $(kubectl  get apiservice elemental-operator) apiservice\.apiregistration\.k8s\.io\/v1beta1\.custom\.metrics\.k8s\.io; do
   kcd "$APISERVICE"
 done
 
@@ -497,19 +497,21 @@ done
 
 
 # Full cleanup of all zks namespaces
-for NS in $(kubectl get namespace --no-headers -o custom-columns=NAME:.metadata.name | grep "^zks"); do
-  kubectl get "$(kubectl api-resources --namespaced=true --verbs=delete -o name| grep -v events\.events\.k8s\.io | grep -v ^events$ | tr "\n" "," | sed -e 's/,$//')" -n "$NS" --no-headers -o custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace,KIND:.kind,APIVERSION:.apiVersion | while read -r NAME NAMESPACE KIND APIVERSION; do
-    kcpf -n "$NAMESPACE" "${KIND}.$(printapiversion "$APIVERSION")" "$NAME"
-    kcd "-n ""$NAMESPACE"" ${KIND}.$(printapiversion "$APIVERSION") ""$NAME"""
-  done
+# for NS in $(kubectl get namespace --no-headers -o custom-columns=NAME:.metadata.name | grep "^zks"); do
+#   kubectl get "$(kubectl api-resources --namespaced=true --verbs=delete -o name| grep -v events\.events\.k8s\.io | grep -v ^events$ | tr "\n" "," | sed -e 's/,$//')" -n "$NS" --no-headers -o custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace,KIND:.kind,APIVERSION:.apiVersion | while read -r NAME NAMESPACE KIND APIVERSION; do
+#     kcpf -n "$NAMESPACE" "${KIND}.$(printapiversion "$APIVERSION")" "$NAME"
+#     kcd "-n ""$NAMESPACE"" ${KIND}.$(printapiversion "$APIVERSION") ""$NAME"""
+#   done
 
-  kcdns "$NS"
-done
+#   kcdns "$NS"
+# done
 
 
 
 # final cleanup - delete any orphaned resources
 for NS in $TOOLS_NAMESPACES $FLEET_NAMESPACES $CATTLE_NAMESPACES; do
+  #vf - added 
+  kcdns "$NS"
   clean_cm_sa "$NS" 
 done
 
