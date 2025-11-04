@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
       - name: verify
-        image: vadimzededa/zks-cleanup:Oct-31
+        image: vadimzededa/zks-cleanup:Oct-31 #for now, until we have a proper fork
         command: [ "verify.sh" ]
         imagePullPolicy: Always
       serviceAccountName: cleanup-service-account

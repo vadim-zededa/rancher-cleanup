@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
       - name: cleanup
-        image: vadimzededa/zks-cleanup:Oct-31
+        image: vadimzededa/zks-cleanup:Oct-31 #for now, until we have a proper fork
         args: [ "force" ]
         imagePullPolicy: Always
       serviceAccountName: cleanup-service-account

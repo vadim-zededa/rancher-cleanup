@@ -495,26 +495,11 @@ for NS in $(kubectl get namespace --no-headers -o custom-columns=NAME:.metadata.
   kcdns "$NS"
 done
 
-
-# Full cleanup of all zks namespaces
-# for NS in $(kubectl get namespace --no-headers -o custom-columns=NAME:.metadata.name | grep "^zks"); do
-#   kubectl get "$(kubectl api-resources --namespaced=true --verbs=delete -o name| grep -v events\.events\.k8s\.io | grep -v ^events$ | tr "\n" "," | sed -e 's/,$//')" -n "$NS" --no-headers -o custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace,KIND:.kind,APIVERSION:.apiVersion | while read -r NAME NAMESPACE KIND APIVERSION; do
-#     kcpf -n "$NAMESPACE" "${KIND}.$(printapiversion "$APIVERSION")" "$NAME"
-#     kcd "-n ""$NAMESPACE"" ${KIND}.$(printapiversion "$APIVERSION") ""$NAME"""
-#   done
-
-#   kcdns "$NS"
-# done
-
-
-
 # final cleanup - delete any orphaned resources
-for NS in $TOOLS_NAMESPACES $FLEET_NAMESPACES $CATTLE_NAMESPACES; do
-  #vf - added 
+for NS in $TOOLS_NAMESPACES $FLEET_NAMESPACES $CATTLE_NAMESPACES; do 
   kcdns "$NS"
   clean_cm_sa "$NS" 
 done
-
 
 # Delete logging CRDs
 for CRD in $(kubectl get crd -o name | grep logging\.banzaicloud\.io); do
